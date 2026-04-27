@@ -17,7 +17,7 @@
   --mono: 'DM Mono', monospace;
   --sans: 'DM Sans', sans-serif;
   --fundo:     #0a1a2f;
-  --fundo2: #02223e;
+  --fundo2: #02345f;
 }
 
 * {
@@ -35,7 +35,6 @@ body {
   color: var(--text);
   font-family: var(--sans);
   min-height: 100vh;
-  background-image: radial-gradient(circle, #172030 1px, transparent 1px);
   background-size: 28px 28px;
 }
 
@@ -251,10 +250,10 @@ main {
 }
 
 .kpi-label {
-  font-size: .6rem;
+  font-size: .9rem;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: var(--muted);
+  color: rgb(187, 187, 187);
   font-weight: 700;
   margin-bottom: 7px;
 }
@@ -353,7 +352,7 @@ main {
 }
 
 .esb-estado {
-  font-size: .95rem;
+  font-size: 1.2rem;
   font-weight: 800;
 }
 
@@ -418,18 +417,6 @@ main {
   box-shadow: 0 10px 32px rgba(0,0,0,.55);
 }
 
-.heat-card.ativo::after {
-  content: '▶ EM FOCO';
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  font-family: var(--mono);
-  font-size: .52rem;
-  font-weight: 700;
-  color: #fff;
-  opacity: .7;
-  letter-spacing: .5px;
-}
 
 .heat-card::before {
   content: '';
@@ -503,6 +490,7 @@ main {
 /* LEGENDA */
 .mapa-legenda {
   display: flex;
+  font-size: .1em;
   justify-content: center;
   gap: 16px;
   flex-wrap: wrap;
@@ -510,10 +498,11 @@ main {
 
 .leg {
   display: flex;
+  margin-top: 30px;
   align-items: center;
   gap: 5px;
-  font-size: .62rem;
-  color: var(--muted);
+  font-size: 1rem;
+  color: white;
 }
 
 .leg-sq {
@@ -540,7 +529,7 @@ thead th {
   background: var(--surface);
   text-align: left;
   padding: 6px 9px;
-  font-size: .58rem;
+  font-size: .70rem;
   text-transform: uppercase;
   letter-spacing: 1px;
   color: var(--muted);
@@ -560,7 +549,7 @@ tbody tr:hover {
 tbody td {
   padding: 7px 9px;
   font-family: var(--mono);
-  font-size: .73rem;
+  font-size: .90rem;
   white-space: nowrap;
 }
 
@@ -582,11 +571,6 @@ tbody tr.linha-critica {
   font-weight: 700;
   font-family: var(--sans) !important;
 }
-
-.pill-c { background: rgba(239,68,68,.12); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
-.pill-a { background: rgba(249,115,22,.12); color: var(--orange); border: 1px solid rgba(249,115,22,.3); }
-.pill-t { background: rgba(234,179,8,.1); color: var(--yellow); border: 1px solid rgba(234,179,8,.3); }
-.pill-n { background: rgba(34,197,94,.08); color: var(--green); border: 1px solid rgba(34,197,94,.25); }
 
 .bar-r {
   display: flex;

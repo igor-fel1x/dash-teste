@@ -96,7 +96,7 @@ function renderMapa() {
       </div>
 
       <span class="hc-pill">${status(e.umidade)}</span>
-      <span class="hc-sub">${e.internacoes} intern.</span>
+   
     </div>
   `).join("");
 }
@@ -109,8 +109,7 @@ function renderStatus() {
   document.getElementById("estadoStatusBar").innerHTML = `
     <div class="estado-status-bar">
       <div class="esb-estado">${e.nome}</div>
-      <div class="esb-ibge">IBGE: ${e.ibge}</div>
-      <span class="esb-umi">${e.umidade}% - ${status(e.umidade)}</span>
+    
     </div>
   `;
 }
@@ -169,9 +168,7 @@ function renderTabela() {
         <td class="td-nm">${e.nome}</td>
         <td>${e.umidade}%</td>
         <td>${e.internacoes}</td>
-        <td>${e.hospitais}</td>
         <td>${status(e.umidade)}</td>
-        <td>${e.ibge}</td>
       </tr>
     `).join("");
 }
