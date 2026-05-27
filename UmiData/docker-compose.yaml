@@ -1,0 +1,51 @@
+services:
+  app:
+    container_name: umidata_app
+    depends_on:
+      - db
+    build: .
+    ports:
+      - "3333:3333"
+    environment:
+      DB_HOST: db
+      DB_DATABASE: UmiData
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_URL: jdbc:mysql://mysql:3306/umidata_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo&characterEncoding=UTF-8
+      DB_PORT: 3306
+      APP_PORT: 3333
+      APP_HOST: localhost
+      AMBIENTE_PROCESSO: producao
+
+  db:
+    image: mysql:8.0
+    container_name: umidata_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: UmiData
+      MYSQL_USER: umidata_admin
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./src/database/script-tabelas.sql:/docker-entrypoint-initdb.d/01-ddl.sql
+
+  worker-java:
+    container_name: umidata_java
+    build: ./java-worker
+    depends_on:
+      - db
+    volumes:
+      - ~/.aws:/root/.aws:ro
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_DATABASE: UmiData
+      AWS_REGION: us-east-1
+    restart: "no"
+
+volumes:
+  db_data:

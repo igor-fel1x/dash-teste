@@ -35,7 +35,7 @@ function cor(u) {
 }
 
 function status(u) {
-  if (u < 15) return "CRÍTICO";
+  if (u < 15) return "CRÍTICO" ;
   if (u < 25) return "ALERTA";
   if (u < 40) return "ATENÇÃO";
   return "NORMAL";
@@ -52,27 +52,158 @@ function estadoCritico() {
 function renderKPIs() {
   const lista = listaEstados();
 
-  const media = lista.reduce((s,e)=>s+e.umidade,0) / lista.length;
-  const criticos = lista.filter(e=>e.umidade < 20).length;
-  const internacoes = lista.reduce((s,e)=>s+e.internacoes,0);
+  const criticos = lista.filter(e => e.umidade < 20).length;
+  const internacoes = lista.reduce((s, e) => s + e.internacoes, 0);
+  const maxUmi = Math.max(...lista.map(e => e.umidade));
+  const minUmi = Math.min(...lista.map(e => e.umidade));
 
   document.getElementById("kpiGrid").innerHTML = `
-    <div class="kpi-card">
-      <div class="kpi-label">Umidade Média</div>
-      <div class="kpi-val">${media.toFixed(1)}%</div>
-    </div>
+  
+  <div class="kpi-card" style="--kc:${cor(maxUmi)}">
+  <div class="kpi-label">Umidade Máxima</div>
+  <div class="kpi-val" style="color:${cor(maxUmi)}">${maxUmi}<span class="kpi-unit">%</span></div>
+  </div>
+  
+  <div class="kpi-card" style="--kc:var(--red)">
+  <div class="kpi-label">Estados Críticos</div>
+  <div class="kpi-val">${criticos}</div>
+  </div>
+  
+  <div class="kpi-card">
+  <div class="kpi-label">Internações</div>
+  <div class="kpi-val">${internacoes}</div>
+  </div>
 
-    <div class="kpi-card">
-      <div class="kpi-label">Estados Críticos</div>
-      <div class="kpi-val">${criticos}</div>
-    </div>
-
-    <div class="kpi-card">
-      <div class="kpi-label">Internações</div>
-      <div class="kpi-val">${internacoes}</div>
-    </div>
+  <div class="kpi-card" style="--kc:${cor(minUmi)}">
+    <div class="kpi-label">Umidade Mínima</div>
+    <div class="kpi-val" style="color:${cor(minUmi)}">${minUmi}<span class="kpi-unit">%</span></div>
+  </div>
   `;
 }
+
+// ===== MODAL =====
+const REGIOES = {
+  Sudeste: ["ES","MG","RJ","SP"],
+  Sul:     ["PR","RS","SC"],
+  Norte:   ["AC","AM","AP","PA","RO","RR","TO"],
+  Nordeste:["AL","BA","CE","MA","PB","PE","PI","RN","SE"],
+  "Centro-Oeste":["DF","GO","MS","MT"],
+};
+
+const ESTADOS_INFO = {
+  ES:{ nome:"Espírito Santo",  regiao:"Sudeste"      },
+  MG:{ nome:"Minas Gerais",    regiao:"Sudeste"      },
+  RJ:{ nome:"Rio de Janeiro",  regiao:"Sudeste"      },
+  SP:{ nome:"São Paulo",       regiao:"Sudeste"      },
+  PR:{ nome:"Paraná",          regiao:"Sul"          },
+  RS:{ nome:"Rio Grande do Sul",regiao:"Sul"         },
+  SC:{ nome:"Santa Catarina",  regiao:"Sul"          },
+  AC:{ nome:"Acre",            regiao:"Norte"        },
+  AM:{ nome:"Amazonas",        regiao:"Norte"        },
+  AP:{ nome:"Amapá",           regiao:"Norte"        },
+  PA:{ nome:"Pará",            regiao:"Norte"        },
+  RO:{ nome:"Rondônia",        regiao:"Norte"        },
+  RR:{ nome:"Roraima",         regiao:"Norte"        },
+  TO:{ nome:"Tocantins",       regiao:"Norte"        },
+  AL:{ nome:"Alagoas",         regiao:"Nordeste"     },
+  BA:{ nome:"Bahia",           regiao:"Nordeste"     },
+  CE:{ nome:"Ceará",           regiao:"Nordeste"     },
+  MA:{ nome:"Maranhão",        regiao:"Nordeste"     },
+  PB:{ nome:"Paraíba",         regiao:"Nordeste"     },
+  PE:{ nome:"Pernambuco",      regiao:"Nordeste"     },
+  PI:{ nome:"Piauí",           regiao:"Nordeste"     },
+  RN:{ nome:"Rio Grande do Norte",regiao:"Nordeste"  },
+  SE:{ nome:"Sergipe",         regiao:"Nordeste"     },
+  DF:{ nome:"Distrito Federal",regiao:"Centro-Oeste" },
+  GO:{ nome:"Goiás",           regiao:"Centro-Oeste" },
+  MS:{ nome:"Mato Grosso do Sul",regiao:"Centro-Oeste"},
+  MT:{ nome:"Mato Grosso",     regiao:"Centro-Oeste" },
+};
+
+function abrirModal() {
+  document.getElementById("fNome").value  = "";
+  document.getElementById("fSigla").value = "";
+  document.getElementById("fIbge").value  = "";
+  document.getElementById("modalRegiaoInfo").textContent = REGIAO;
+  document.getElementById("modalOv").classList.add("open");
+}
+
+function fecharModal() {
+  document.getElementById("modalOv").classList.remove("open");
+}
+
+function mostrarToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  setTimeout(() => { t.style.display = "none"; }, 3000);
+}
+
+function salvarEstado() {
+  const nome  = document.getElementById("fNome").value.trim();
+  const sigla = document.getElementById("fSigla").value.trim().toUpperCase();
+  const ibge  = document.getElementById("fIbge").value.trim();
+
+  if (!nome || !sigla || !ibge) {
+    mostrarToast("⚠ Preencha todos os campos.");
+    return;
+  }
+
+  if (sigla.length < 2 || sigla.length > 3) {
+    mostrarToast("⚠ Sigla deve ter 2 ou 3 letras.");
+    return;
+  }
+
+  if (DB[sigla]) {
+    mostrarToast("⚠ Estado já cadastrado.");
+    return;
+  }
+
+  const info = ESTADOS_INFO[sigla];
+  if (!info || info.regiao !== REGIAO) {
+    mostrarToast(`⚠ ${sigla} não pertence à região ${REGIAO}.`);
+    return;
+  }
+
+  DB[sigla] = {
+    nome,
+    sigla,
+    ibge,
+    regiao: REGIAO,
+    umidade:     Math.floor(Math.random() * 55) + 10,
+    internacoes: Math.floor(Math.random() * 4000) + 500,
+    hospitais:   Math.floor(Math.random() * 900) + 200,
+  };
+
+  SERIE[sigla] = Array.from({ length: 6 }, (_, i) =>
+    Math.max(5, DB[sigla].umidade + (5 - i) * 2)
+  );
+
+  fecharModal();
+  mostrarToast(`✓ ${nome} adicionado com sucesso!`);
+  renderTudo();
+}
+
+
+// ===== INIT =====
+document.addEventListener("DOMContentLoaded", () => {
+
+  document.getElementById("nomeGestor").textContent   = GESTOR;
+  document.getElementById("regiaoGestor").textContent = REGIAO;
+ 
+
+  estadoAtual = estadoCritico().sigla;
+
+  renderTudo();
+
+  document.getElementById("btnAdmin").addEventListener("click", abrirModal);
+  document.getElementById("btnCancelar").addEventListener("click", fecharModal);
+  document.getElementById("btnSalvar").addEventListener("click", salvarEstado);
+
+  document.getElementById("modalOv").addEventListener("click", e => {
+    if (e.target === document.getElementById("modalOv")) fecharModal();
+  });
+});
 
 
 // ===== MAPA =====
@@ -152,7 +283,17 @@ function renderBarras() {
         data: lista.map(e=>e.umidade),
         backgroundColor: lista.map(e=>cor(e.umidade))
       }]
-    }
+    },
+    options:{
+      plugins:{
+        legend:{
+          labels:{
+            color: "#ffffff"
+
+          }
+        }
+      }
+    },
   });
 }
 
@@ -174,14 +315,11 @@ function renderTabela() {
 }
 
 
-// ===== CONTROLE =====
 function selecionarEstado(sigla) {
   estadoAtual = sigla;
   renderTudo();
 }
 
-
-// ===== RENDER =====
 function renderTudo() {
   renderKPIs();
   renderStatus();
@@ -192,16 +330,3 @@ function renderTudo() {
 }
 
 
-// ===== INIT =====
-document.addEventListener("DOMContentLoaded", () => {
-
-  document.getElementById("nomeGestor").textContent = GESTOR;
-  document.getElementById("regiaoGestor").textContent = REGIAO;
-  document.getElementById("secRegiaoLabel").textContent = REGIAO;
-  document.getElementById("mapaFocoTag").textContent = REGIAO;
-
-  estadoAtual = estadoCritico().sigla;
-
-  renderTudo();
-
-});
